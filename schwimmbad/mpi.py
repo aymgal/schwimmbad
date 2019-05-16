@@ -228,7 +228,10 @@ def custom_starmap_helper(submit, worker, callback, iterable):
     futures = []
     for args in iterable:
         future = submit(worker, *args)
-        future.add_done_callback(callback)
+
+        if callback is not None:
+            future.add_done_callback(callback)
+            
         futures.append(future)
 
     def result_iterator():  # pylint: disable=missing-docstring
@@ -266,7 +269,4 @@ class MPIAsyncPool(MPIPoolExecutor):
                 before the given timeout.
             Exception: If ``fn(*args)`` raises for any values.
         """
-        if callback is None:
-            callback = lambda *args, **kwargs: pass
-
         return custom_starmap_helper(self.submit, fn, callback, iterable)
