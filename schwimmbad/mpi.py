@@ -13,7 +13,7 @@ MPIPoolExecutor = None
 from . import log, _VERBOSE
 from .pool import BasePool
 
-__all__ = ['MPIPool']
+__all__ = ['MPIPool', 'MPIAsyncPool']
 
 
 def _dummy_callback(x):
