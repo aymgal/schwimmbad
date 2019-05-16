@@ -7,8 +7,7 @@ import traceback
 # it only when an MPI Pool is explicitly created.
 # Still make it a global to avoid messing up other things.
 MPI = None
-
-from mpi4py.futures import MPIPoolExecutor
+MPIPoolExecutor = None
 
 # Project
 from . import log, _VERBOSE
@@ -23,12 +22,17 @@ def _dummy_callback(x):
 
 def _import_mpi(quiet=False, use_dill=False):
     global MPI
+    global MPIPoolExecutor
     try:
         from mpi4py import MPI as _MPI
         if use_dill:
             import dill
             _MPI.pickle.__init__(dill.dumps, dill.loads, dill.HIGHEST_PROTOCOL)
         MPI = _MPI
+
+        from mpi4py.futures import MPIPoolExecutor as tmp
+        MPIPoolExecutor = tmp
+
     except ImportError:
         if not quiet:
             # Re-raise with a more user-friendly error:
@@ -231,7 +235,7 @@ def custom_starmap_helper(submit, worker, callback, iterable):
 
         if callback is not None:
             future.add_done_callback(callback)
-            
+
         futures.append(future)
 
     def result_iterator():  # pylint: disable=missing-docstring
