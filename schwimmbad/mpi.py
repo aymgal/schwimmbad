@@ -8,12 +8,16 @@ import traceback
 # Still make it a global to avoid messing up other things.
 MPI = None
 
-# Filled in import_mpi below
-MPIPoolExecutor = object
-
 # Project
 from . import log, _VERBOSE
 from .pool import BasePool
+
+MPIPoolExecutor = object
+try:
+    from mpi4py.futures import MPIPoolExecutor as tmp
+    MPIPoolExecutor = tmp
+except ImportError:
+    pass
 
 __all__ = ['MPIPool', 'MPIAsyncPool']
 
@@ -31,9 +35,6 @@ def _import_mpi(quiet=False, use_dill=False):
             import dill
             _MPI.pickle.__init__(dill.dumps, dill.loads, dill.HIGHEST_PROTOCOL)
         MPI = _MPI
-
-        from mpi4py.futures import MPIPoolExecutor as tmp
-        MPIPoolExecutor = tmp
 
     except ImportError:
         if not quiet:
