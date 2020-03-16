@@ -2,8 +2,8 @@
 from __future__ import division, print_function, absolute_import, unicode_literals
 import signal
 import functools
-import multiprocessing
-from multiprocessing.pool import Pool
+import multiprocess
+from multiprocess.pool import Pool
 
 __all__ = ['MultiPool']
 
@@ -56,6 +56,13 @@ class MultiPool(Pool):
         super(MultiPool, self).__init__(processes, new_initializer,
                                         initargs, **kwargs)
         self.size = self._processes
+        self.rank = 0
+
+    def is_master(self):
+        return self.rank == 0
+
+    def is_worker(self):
+        return self.rank != 0
 
     @staticmethod
     def enabled():
@@ -105,7 +112,7 @@ class MultiPool(Pool):
             try:
                 return r.get(self.wait_timeout)
 
-            except multiprocessing.TimeoutError:
+            except multiprocess.TimeoutError:
                 pass
 
             except KeyboardInterrupt:
